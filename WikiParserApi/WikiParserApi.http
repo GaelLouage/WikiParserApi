@@ -1,0 +1,6 @@
+@WikiParserApi_HostAddress = http://localhost:5147
+
+GET {{WikiParserApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

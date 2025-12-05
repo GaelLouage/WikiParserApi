@@ -9,6 +9,6 @@ namespace Infra.Services.Interfaces
 {
     public interface IWikiParserService
     {
-        Task<WikiEntity> ExtractFirstParagraphAsync(string topic);
+        Task<WikiEntity> ExtractPageAsync(string topic, bool fullContent = false, int paragraphCount = 1);
     }
 }

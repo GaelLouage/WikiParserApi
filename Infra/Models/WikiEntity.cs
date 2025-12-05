@@ -9,6 +9,8 @@ namespace Infra.Models
     public class WikiEntity
     {
         public string Topic { get; set; }
-        public string Excerpt { get; set; }
+        public string Title { get; set; }
+        public List<string> Body { get; set; }
+        public List<string> ImageUrl { get; set; }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Infra.Interfaces;
 using Infra.Models;
 using Microsoft.Extensions.Caching.Memory;
+using System.Runtime;
 
 namespace Infra.Classes
 {

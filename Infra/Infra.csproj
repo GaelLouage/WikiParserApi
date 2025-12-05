@@ -7,10 +7,44 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Fonts\Arial\ARIAL.TTF" />
+    <None Remove="Fonts\Arial\ARIALBD.TTF" />
+    <None Remove="Fonts\Arial\ARIALBI.TTF" />
+    <None Remove="Fonts\Arial\ARIALI.TTF" />
+    <None Remove="Fonts\Arial\ARIALN.TTF" />
+    <None Remove="Fonts\Arial\ARIALNB.TTF" />
+    <None Remove="Fonts\Arial\ARIALNBI.TTF" />
+    <None Remove="Fonts\Arial\ARIALNI.TTF" />
+    <None Remove="Fonts\Arial\ARIBLK.TTF" />
+    <None Remove="Fonts\CourierNew\COUR.TTF" />
+    <None Remove="Fonts\CourierNew\COURBD.TTF" />
+    <None Remove="Fonts\CourierNew\COURBI.TTF" />
+    <None Remove="Fonts\CourierNew\COURI.TTF" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Fonts\Arial\ARIAL.TTF" />
+    <EmbeddedResource Include="Fonts\Arial\ARIALBD.TTF" />
+    <EmbeddedResource Include="Fonts\Arial\ARIALBI.TTF" />
+    <EmbeddedResource Include="Fonts\Arial\ARIALI.TTF" />
+    <EmbeddedResource Include="Fonts\Arial\ARIALN.TTF" />
+    <EmbeddedResource Include="Fonts\Arial\ARIALNB.TTF" />
+    <EmbeddedResource Include="Fonts\Arial\ARIALNBI.TTF" />
+    <EmbeddedResource Include="Fonts\Arial\ARIALNI.TTF" />
+    <EmbeddedResource Include="Fonts\Arial\ARIBLK.TTF" />
+    <EmbeddedResource Include="Fonts\CourierNew\COUR.TTF" />
+    <EmbeddedResource Include="Fonts\CourierNew\COURBD.TTF" />
+    <EmbeddedResource Include="Fonts\CourierNew\COURBI.TTF" />
+    <EmbeddedResource Include="Fonts\CourierNew\COURI.TTF" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.0" />
+    <PackageReference Include="PDFsharp-MigraDoc-GDI" Version="6.2.3" />
     <PackageReference Include="Polly" Version="8.6.5" />
     <PackageReference Include="Serilog" Version="4.3.0" />
+    <PackageReference Include="System.Drawing.Common" Version="10.0.0" />
   </ItemGroup>
 
 </Project>

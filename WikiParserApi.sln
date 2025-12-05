@@ -1,11 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36616.10 d17.14
+VisualStudioVersion = 17.14.36616.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WikiParserApi", "WikiParserApi\WikiParserApi.csproj", "{2D8DC199-89DE-4D76-B7A1-09DEAE5849B3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infra", "Infra\Infra.csproj", "{1D927D7C-9DDA-4E59-8F3F-B475BDF5A6B0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WikiIntegrationTests", "WikiIntegrationTests\WikiIntegrationTests.csproj", "{63807B9B-C192-4DAB-BADE-832866E14382}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WikiApp", "WikiApp\WikiApp.csproj", "{F2E1D6B8-4370-48B2-826A-F4420157F799}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +25,14 @@ Global
 		{1D927D7C-9DDA-4E59-8F3F-B475BDF5A6B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1D927D7C-9DDA-4E59-8F3F-B475BDF5A6B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1D927D7C-9DDA-4E59-8F3F-B475BDF5A6B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{63807B9B-C192-4DAB-BADE-832866E14382}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63807B9B-C192-4DAB-BADE-832866E14382}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63807B9B-C192-4DAB-BADE-832866E14382}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63807B9B-C192-4DAB-BADE-832866E14382}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2E1D6B8-4370-48B2-826A-F4420157F799}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2E1D6B8-4370-48B2-826A-F4420157F799}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2E1D6B8-4370-48B2-826A-F4420157F799}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2E1D6B8-4370-48B2-826A-F4420157F799}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

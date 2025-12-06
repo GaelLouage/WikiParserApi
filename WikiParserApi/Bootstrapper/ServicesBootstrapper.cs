@@ -15,10 +15,9 @@ namespace WikiParserApi.Bootstrapper
             services.AddScoped<IPdfService, PdfService>();
             services.AddScoped<IMemoryCacheService, MemoryCacheService>();
 
-            services.AddScoped<IWikiParserService>(x =>
+            services.AddSingleton<IWikiParserService>(x =>
             {
-                var wikiBaseUrl = builder.Configuration.GetValue<string>("WikiBaseUrl");
-                return new WikiParserService(wikiBaseUrl);
+                return new WikiParserService(builder.Configuration);
             });
         }
 

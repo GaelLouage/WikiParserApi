@@ -15,11 +15,7 @@ builder.Services.RateLimiterRegistration();
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-#region Serilog
-
 builder.SerilogConfiguration();
-
-#endregion
 builder.Services.AddMemoryCache();
 
 builder.Services.ScopesRegistration(builder);

@@ -10,7 +10,7 @@ Console.WriteLine("Hello, World!");
 var baseUrl = "https://localhost:7072/api/Wiki/";
 
 HttpClientService example = new HttpClientService();
-var wikiData = await example.GetWikiData($"{baseUrl}Britney_Spears");
+var wikiData = await example.GetWikiData($"{baseUrl}Britney_Spears/2");
 
 Console.WriteLine(wikiData.PdfByte64String);
 

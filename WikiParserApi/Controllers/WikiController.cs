@@ -1,8 +1,10 @@
 using Infra.Dtos;
+using Infra.Enums;
 using Infra.Interfaces;
 using Infra.Models;
 using Infra.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.RateLimiting;
 
 
@@ -30,8 +32,8 @@ namespace WikiParserApi.Controllers
         }
 
         //get full page 
-        [HttpGet("{topic}")]
-        public async Task<IActionResult> ParseFullPage(string topic)
+        [HttpGet("{topic}/{language}")]
+        public async Task<IActionResult> ParseFullPage(string topic,LanguageType language)
         {
             var wikiDto = new WikiDto();
             topic = topic?.Trim();
@@ -42,26 +44,28 @@ namespace WikiParserApi.Controllers
             try
             {
                 var safeTopic = Uri.EscapeDataString(topic);
-                var cacheKey = $"{safeTopic}-fullpage";
+                var cacheKey = $"{safeTopic}-fullpage-{language}";
                 if (_memoryCacheService.GetCacheValue(cacheKey) is WikiEntity cached)
                 {
-                    return Ok(cached);
+                    var cachedToPdfBase64 = await _pdfService.GeneratePdfFromWikiEntityAsync(cached);
+                    return Ok(cachedToPdfBase64);
                 }
-                var result = await _parser.ExtractPageAsync(topic);
+                (WikiEntity? wikiEntity, List<string> Errors) = await _parser.ExtractPageAsync(topic, language);
                 _logger.LogInformation(
                     $"Wiki Endpoint called at " +
                     $"{DateTime.UtcNow}");
             
                 _memoryCacheService.SetCacheValue(
                     cacheKey,
-                    result, 
+                    wikiEntity, 
                     TimeSpan.FromSeconds(30));
                 _logger.LogInformation(
                     $"{topic} - full page cached in memory " +
                     $"{DateTime.UtcNow}");
+        
+                wikiDto = await _pdfService.GeneratePdfFromWikiEntityAsync(wikiEntity);
+                wikiDto.Errors.AddRange(Errors);
 
-                wikiDto = await _pdfService.GeneratePdfFromWikiEntityAsync(result);
-                
                 return Ok(wikiDto);
             }
             catch (Exception ex)

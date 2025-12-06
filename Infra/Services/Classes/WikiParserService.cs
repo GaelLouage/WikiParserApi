@@ -1,12 +1,16 @@
 ﻿using HtmlAgilityPack;
 using Infra.Classes;
+using Infra.Enums;
 using Infra.Extensions;
 using Infra.Helpers;
 using Infra.Interfaces;
 using Infra.Models;
 using Infra.Services.Interfaces;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Polly.Wrap;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,42 +22,45 @@ namespace Infra.Services.Classes
 {
     public class WikiParserService : IWikiParserService
     {
-        private readonly string _wikiBaseUrl;
         private readonly AsyncPolicyWrap _policy;
         private HtmlWeb _web;
-        public WikiParserService(string baseUrl)
+        private readonly IConfiguration _config;
+
+        public WikiParserService(IConfiguration config)
         {
-            _wikiBaseUrl = baseUrl;
+
             _web = new HtmlWeb();
             _policy = WikiPoliciesHelpers.CreateRetryTimeoutPolicy();
+            _config = config;
         }
 
         // make page with title and paragraphs
-        public async Task<WikiEntity> ExtractPageAsync(string topic, bool fullContent = false, int paragraphCount = 1)
+        public async Task<(WikiEntity, List<string> Errors)> ExtractPageAsync(
+            string topic,
+             LanguageType language =
+            LanguageType.English,
+            bool fullContent = false,
+            int paragraphCount = 1
+           )
         {
+            var errors = new List<string>();
             try
             {
-                return await _policy.ExecuteAsync(async () =>
+
+                string? wikiBaseUrl = SetWikiLanguage(language);
+
+                return (await _policy.ExecuteAsync(async () =>
                 {
-                    var url = $"{_wikiBaseUrl}{topic}";
+                    var url = $"{wikiBaseUrl}{topic}";
                     var doc = await _web.LoadFromWebAsync(url);
-                    
+
                     var title = doc.ExtractTitle();
                     var body = GetBody(fullContent, paragraphCount, doc);
                     var images = doc.ExtractImagesUrl();
 
-                    for (int i = 0; i < images.Count; i++)
-                    {
-                        var imageLink = $"https:{images[i]}";
-                        images[i] = imageLink;
-                    }
 
-
-                    (bool IsValid, string Message) = PageIsValid(title, body, images);
-                    if(IsValid is false)
-                    {
-                        throw new Exception(Message);
-                    }
+                    errors = CheckPageValidation(title, body, images);
+                 
 
                     return new WikiEntity
                     {
@@ -63,7 +70,7 @@ namespace Infra.Services.Classes
                         ImageUrl = images
                     };
 
-                });
+                }), errors);
             }
             catch (Exception)
             {
@@ -71,24 +78,38 @@ namespace Infra.Services.Classes
             }
         }
 
-        private static (bool IsValid, string Message) PageIsValid(string title, List<string> body, List<string> images)
+        private string? SetWikiLanguage(LanguageType language)
         {
+            var wikiBaseUrls = _config.GetSection("WikiBaseUrl");
+            return language switch
+            {
+                LanguageType.Dutch => wikiBaseUrls.GetSection("nl").Value,
+                LanguageType.Spanish => wikiBaseUrls.GetSection("es").Value,
+                LanguageType.French => wikiBaseUrls.GetSection("fr").Value,
+                LanguageType.German => wikiBaseUrls.GetSection("de").Value,
+                _ => wikiBaseUrls.GetSection("en").Value,
+            };
+        }
+
+        private static List<string> CheckPageValidation(string title, List<string> body, List<string> images)
+        {
+            var errors = new List<string>();    
             //  error if not title
             if (string.IsNullOrEmpty(title))
             {
-                return (false, "Title not found.");
+                errors.Add("Title not found.");
             }
             //error if image not found
             if (images.Count == 0)
             {
-                return (false, "Images not found.");
+                errors.Add("Images not found.");
             }
             // error if body is empty
             if (body.Count == 0)
             {
-                return (false, "Body not found.");
+                errors.Add("Body not found.");
             }
-            return (true, "Page is valid.");
+            return errors;
         }
 
         private static List<string> GetBody(bool fullContent, int paragraphCount, HtmlDocument doc)

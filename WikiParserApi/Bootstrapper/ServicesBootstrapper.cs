@@ -3,6 +3,7 @@ using Infra.Interfaces;
 using Infra.Services.Classes;
 using Infra.Services.Interfaces;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Serilog;
 using System.Threading.RateLimiting;
 
@@ -46,6 +47,25 @@ namespace WikiParserApi.Bootstrapper
                 .CreateLogger();
 
             builder.Host.UseSerilog();
+        }
+
+        public static void AddHealthChecks(this WebApplicationBuilder builder)
+        {
+            builder.Services.AddHealthChecks()
+                // Basic self-check
+                .AddCheck("self", () => HealthCheckResult.Healthy(), tags: new[] { "liveness" })
+
+                // Wikipedia availability check - replace with your actual endpoint
+                .AddUrlGroup(
+                    new Uri("https://localhost:7072/api/rest_v1/Wiki/Britney_Spears/0"),
+                    name: "wikipedia_api",
+                    failureStatus: HealthStatus.Unhealthy);
+
+            //// Cache readiness (example for Redis)
+            //.AddRedis(
+            //    redisConnectionString: builder.Configuration.GetConnectionString("Redis"),
+            //    name: "redis_cache",
+            //    failureStatus: HealthStatus.Unhealthy);
         }
     }
 }

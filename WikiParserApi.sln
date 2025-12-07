@@ -9,8 +9,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infra", "Infra\Infra.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WikiIntegrationTests", "WikiIntegrationTests\WikiIntegrationTests.csproj", "{63807B9B-C192-4DAB-BADE-832866E14382}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WikiApp", "WikiApp\WikiApp.csproj", "{F2E1D6B8-4370-48B2-826A-F4420157F799}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,10 +27,6 @@ Global
 		{63807B9B-C192-4DAB-BADE-832866E14382}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{63807B9B-C192-4DAB-BADE-832866E14382}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{63807B9B-C192-4DAB-BADE-832866E14382}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F2E1D6B8-4370-48B2-826A-F4420157F799}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F2E1D6B8-4370-48B2-826A-F4420157F799}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F2E1D6B8-4370-48B2-826A-F4420157F799}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F2E1D6B8-4370-48B2-826A-F4420157F799}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

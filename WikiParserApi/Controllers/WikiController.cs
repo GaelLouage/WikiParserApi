@@ -12,7 +12,7 @@ namespace WikiParserApi.Controllers
 {
     [EnableRateLimiting("fixed")]
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/rest_v1/[controller]")]
     public class WikiController : ControllerBase
     {
         private readonly IWikiParserService _parser;
@@ -45,24 +45,14 @@ namespace WikiParserApi.Controllers
             {
                 var safeTopic = Uri.EscapeDataString(topic);
                 var cacheKey = $"{safeTopic}-fullpage-{language}";
-                if (_memoryCacheService.GetCacheValue(cacheKey) is WikiEntity cached)
+                (bool flowControl, IActionResult value) = await CheckCacheAsync(cacheKey);
+                if (!flowControl)
                 {
-                    var cachedToPdfBase64 = await _pdfService.GeneratePdfFromWikiEntityAsync(cached);
-                    return Ok(cachedToPdfBase64);
+                    return value;
                 }
                 (WikiEntity? wikiEntity, List<string> Errors) = await _parser.ExtractPageAsync(topic, language);
-                _logger.LogInformation(
-                    $"Wiki Endpoint called at " +
-                    $"{DateTime.UtcNow}");
-            
-                _memoryCacheService.SetCacheValue(
-                    cacheKey,
-                    wikiEntity, 
-                    TimeSpan.FromSeconds(30));
-                _logger.LogInformation(
-                    $"{topic} - full page cached in memory " +
-                    $"{DateTime.UtcNow}");
-        
+                LogInformation(topic, cacheKey, wikiEntity);
+
                 wikiDto = await _pdfService.GeneratePdfFromWikiEntityAsync(wikiEntity);
                 wikiDto.Errors.AddRange(Errors);
 
@@ -79,6 +69,32 @@ namespace WikiParserApi.Controllers
                 wikiDto.Errors.Add(errorMessage);
                 return Problem(string.Join("\n",wikiDto.Errors.Select(x => $"{x}")));
             }
+        }
+
+        private void LogInformation(string topic, string cacheKey, WikiEntity wikiEntity)
+        {
+            _logger.LogInformation(
+                $"Wiki Endpoint called at " +
+                $"{DateTime.UtcNow}");
+
+            _memoryCacheService.SetCacheValue(
+                cacheKey,
+                wikiEntity,
+                TimeSpan.FromSeconds(30));
+            _logger.LogInformation(
+                $"{topic} - full page cached in memory " +
+                $"{DateTime.UtcNow}");
+        }
+
+        private async Task<(bool flowControl, IActionResult value)> CheckCacheAsync(string cacheKey)
+        {
+            if (_memoryCacheService.GetCacheValue(cacheKey) is WikiEntity cached)
+            {
+                var cachedToPdfBase64 = await _pdfService.GeneratePdfFromWikiEntityAsync(cached);
+                return (flowControl: false, value: Ok(cachedToPdfBase64));
+            }
+
+            return (flowControl: true, value: null);
         }
     }
 }

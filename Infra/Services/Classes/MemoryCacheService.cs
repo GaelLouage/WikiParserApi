@@ -1,5 +1,7 @@
 ﻿using Infra.Interfaces;
 using Infra.Models;
+using Infra.Services.Classes;
+using Infra.Services.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 using System.Runtime;
 
@@ -24,10 +26,15 @@ namespace Infra.Classes
             _memoryCache.Set(key, wikiEntity, options);
         }
 
-        public WikiEntity? GetCacheValue(string key)
+        public WikiEntity? GetCacheValue(string key, IAppMetricsService appMetricsService)
         {
-            _memoryCache.TryGetValue(key, out WikiEntity? wikiEntity);
-            return wikiEntity;
+            if(_memoryCache.TryGetValue(key, out WikiEntity? wikiEntity))
+            {
+                appMetricsService.IncrementRequest();
+                appMetricsService.IncrementCacheHit();
+                return wikiEntity;
+            }
+            return null;
         }
     }
 }

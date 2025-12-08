@@ -9,7 +9,9 @@ using Infra.Services.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Polly;
 using Polly.Wrap;
+using Prometheus;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -25,13 +27,15 @@ namespace Infra.Services.Classes
         private readonly AsyncPolicyWrap _policy;
         private HtmlWeb _web;
         private readonly IConfiguration _config;
-
-        public WikiParserService(IConfiguration config)
+        private readonly IAppMetricsService _appMetricsService;
+        public WikiParserService(IConfiguration config, IAppMetricsService appMetricsService)
         {
 
             _web = new HtmlWeb();
-            _policy = WikiPoliciesHelpers.CreateRetryTimeoutPolicy();
+            _appMetricsService = appMetricsService;
             _config = config;
+
+            _policy = WikiPoliciesHelpers.CreateRetryTimeoutPolicy(_appMetricsService);
         }
 
         // make page with title and paragraphs
@@ -46,11 +50,16 @@ namespace Infra.Services.Classes
             var errors = new List<string>();
             try
             {
-
+                // increment prometheus metric requests
+                _appMetricsService.IncrementRequest();
                 string? wikiBaseUrl = SetWikiLanguage(language);
 
                 return (await _policy.ExecuteAsync(async () =>
                 {
+                    #region fake error for testing retry policy and prometheus metrics
+                    //// fake error for testing retry policy and prometheus metrics
+                    //throw new Exception("Fake exception");
+                    #endregion
                     var url = $"{wikiBaseUrl}{topic}";
                     var doc = await _web.LoadFromWebAsync(url);
 
@@ -58,6 +67,7 @@ namespace Infra.Services.Classes
                     var body = GetBody(fullContent, paragraphCount, doc);
                     var images = doc.ExtractImagesUrl();
 
+                  
 
                     errors = CheckPageValidation(title, body, images);
                  

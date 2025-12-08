@@ -11,4 +11,5 @@ namespace Infra.Dtos
         public List<string> Errors { get; set; } = new List<string>();
         public string? PdfByte64String { get; set; } 
     }
+
 }

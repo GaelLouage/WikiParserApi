@@ -1,4 +1,5 @@
 ﻿using Infra.Classes;
+using Infra.Helpers;
 using Infra.Interfaces;
 using Infra.Services.Classes;
 using Infra.Services.Interfaces;
@@ -13,13 +14,18 @@ namespace WikiParserApi.Bootstrapper
     {
         public static void ScopesRegistration(this IServiceCollection services, WebApplicationBuilder builder)
         {
+            //singleton registrations
+            services.AddSingleton<IAppMetricsService, AppMetricsService>();
+            //scoped registrations
             services.AddScoped<IPdfService, PdfService>();
             services.AddScoped<IMemoryCacheService, MemoryCacheService>();
-
-            services.AddSingleton<IWikiParserService>(x =>
+            services.AddScoped<IWikiParserService>(sp =>
             {
-                return new WikiParserService(builder.Configuration);
+                var config = sp.GetRequiredService<IConfiguration>();
+                var appMetricsService = sp.GetRequiredService<IAppMetricsService>();
+                return new WikiParserService(config, appMetricsService);
             });
+          
         }
 
         // rate limiter configuration moved to Program.cs

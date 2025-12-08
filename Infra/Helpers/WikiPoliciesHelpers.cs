@@ -1,10 +1,14 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Infra.Services.Classes;
+using Infra.Services.Interfaces;
+using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Timeout;
 using Polly.Wrap;
+using Prometheus;
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,17 +17,16 @@ namespace Infra.Helpers
 {
     public static class WikiPoliciesHelpers
     {
-        public static AsyncPolicyWrap CreateRetryTimeoutPolicy()
+        public static AsyncPolicyWrap CreateRetryTimeoutPolicy(IAppMetricsService appMetricsService)
         {
-            var messageSb = new StringBuilder();
             var retry = Policy
                 .Handle<Exception>()
                 .WaitAndRetryAsync(
                     retryCount: 3,
-                    sleepDurationProvider: attempt =>
-                        TimeSpan.FromSeconds(Math.Pow(2, attempt)), // 2s, 4s, 8s
+                    sleepDurationProvider: attempt => TimeSpan.FromSeconds(Math.Pow(2, attempt)),
                     onRetry: (exception, delay, attempt, ctx) =>
                     {
+                        appMetricsService.IncrementRetry(); 
                         Log.Logger.Information($"Retry {attempt} after {delay}. Reason: {exception.Message}");
                     });
 

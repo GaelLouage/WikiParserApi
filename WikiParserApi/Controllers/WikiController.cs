@@ -1,11 +1,14 @@
+using HtmlAgilityPack;
 using Infra.Dtos;
 using Infra.Enums;
 using Infra.Interfaces;
 using Infra.Models;
+using Infra.Services.Classes;
 using Infra.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.RateLimiting;
+using System.Reflection.Emit;
 
 
 namespace WikiParserApi.Controllers
@@ -19,56 +22,97 @@ namespace WikiParserApi.Controllers
         private readonly IPdfService _pdfService;
         private readonly ILogger<WikiController> _logger;
         private readonly IMemoryCacheService _memoryCacheService;
+        private readonly IAppMetricsService _appMetricsService;
         public WikiController(
             IWikiParserService parser,
             ILogger<WikiController> logger,
             IMemoryCacheService memoryCacheService,
-            IPdfService pdfService)
+            IPdfService pdfService,
+            IAppMetricsService appMetricsService)
         {
             _parser = parser;
             _logger = logger;
             _memoryCacheService = memoryCacheService;
             _pdfService = pdfService;
+            _appMetricsService = appMetricsService;
         }
 
         //get full page 
-        [HttpGet("{topic}/{language}")]
-        public async Task<IActionResult> ParseFullPage(string topic,LanguageType language)
+        [HttpPost("parse")]
+        public async Task<IActionResult> ParseFullPage(List<WikiRequestEntity> wikiRequests)
         {
-            var wikiDto = new WikiDto();
-            topic = topic?.Trim();
-            if (string.IsNullOrWhiteSpace(topic))
-            {
-                return BadRequest("Topic cannot be null or empty.");
-            }
             try
             {
-                var safeTopic = Uri.EscapeDataString(topic);
-                var cacheKey = $"{safeTopic}-fullpage-{language}";
-                (bool flowControl, IActionResult value) = await CheckCacheAsync(cacheKey);
-                if (!flowControl)
+                (List<WikiDto> wikiDtosList, string value) = await WikiRequestsAsync(wikiRequests);
+
+                if (!string.IsNullOrEmpty(value))
                 {
-                    return value;
+                    return BadRequest(value);
                 }
-                (WikiEntity? wikiEntity, List<string> Errors) = await _parser.ExtractPageAsync(topic, language);
-                LogInformation(topic, cacheKey, wikiEntity);
 
-                wikiDto = await _pdfService.GeneratePdfFromWikiEntityAsync(wikiEntity);
-                wikiDto.Errors.AddRange(Errors);
-
-                return Ok(wikiDto);
+                return Ok(wikiDtosList);
             }
             catch (Exception ex)
             {
-                var errorMessage = 
-                    $"Error parsing full page for topic '{topic}' " +
+                var errorMessage =
+                    $"Error parsing" +
                     $"ERROR: {ex.Message} " +
                     $"at {DateTime.UtcNow}";
 
-                _logger.LogError(errorMessage);
-                wikiDto.Errors.Add(errorMessage);
-                return Problem(string.Join("\n",wikiDto.Errors.Select(x => $"{x}")));
+                return Problem(errorMessage);
             }
+        }
+
+        private async Task<(List<WikiDto> wikiDtos, string value)> WikiRequestsAsync(List<WikiRequestEntity> wikiRequests)
+        {
+            var wikiDtos = new List<WikiDto>();
+            WikiDto? wikiDto = new WikiDto();
+            foreach (var request in wikiRequests)
+            {
+
+                request.Topic = request.Topic?.Trim();
+                request.Topic = request.Topic?.Replace(" ", "_");
+                if (string.IsNullOrWhiteSpace(request.Topic))
+                {
+                    return (null, "One of the topics in the request list is null or empty.");
+                }
+
+                // get from the cache
+                var safeTopic = Uri.EscapeDataString(request.Topic);
+                var cacheKey = $"{safeTopic}-fullpage-{request.Language}";
+                bool flowControl = await GetWikiFromCache(wikiDtos, cacheKey);
+                if (!flowControl)
+                {
+                    continue;
+                }
+
+                (WikiEntity? wikiEntity, List<string> Errors) = await _parser.ExtractPageAsync(request.Topic, request.Language);
+                LogInformation(request.Topic, cacheKey, wikiEntity);
+                var pdfRequest = (await _pdfService.GeneratePdfFromWikiEntityAsync(wikiEntity));
+                wikiDtos.Add(new WikiDto()
+                {
+                    Errors = Errors,
+                    PdfByte64String = pdfRequest.PdfByte64String
+                });
+            }
+
+            return (wikiDtos, string.Empty);
+        }
+
+        private async Task<bool> GetWikiFromCache(List<WikiDto> wikiDtos, string cacheKey)
+        {
+            if (_memoryCacheService.GetCacheValue(cacheKey, _appMetricsService) is WikiEntity cached)
+            {
+                var wikiDataFromCache = await _pdfService.GeneratePdfFromWikiEntityAsync(cached);
+                wikiDtos.Add(new WikiDto()
+                {
+                    Errors = wikiDataFromCache.Errors,
+                    PdfByte64String = wikiDataFromCache.PdfByte64String
+                });
+                return false;
+            }
+
+            return true;
         }
 
         private void LogInformation(string topic, string cacheKey, WikiEntity wikiEntity)
@@ -84,17 +128,6 @@ namespace WikiParserApi.Controllers
             _logger.LogInformation(
                 $"{topic} - full page cached in memory " +
                 $"{DateTime.UtcNow}");
-        }
-
-        private async Task<(bool flowControl, IActionResult value)> CheckCacheAsync(string cacheKey)
-        {
-            if (_memoryCacheService.GetCacheValue(cacheKey) is WikiEntity cached)
-            {
-                var cachedToPdfBase64 = await _pdfService.GeneratePdfFromWikiEntityAsync(cached);
-                return (flowControl: false, value: Ok(cachedToPdfBase64));
-            }
-
-            return (flowControl: true, value: null);
         }
     }
 }

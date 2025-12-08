@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Prometheus;
 using Serilog;
 using System.Threading.RateLimiting;
 using WikiParserApi.Bootstrapper;
@@ -31,6 +32,10 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+app.UseHttpMetrics(); // Optional: automatic HTTP metrics
+
+app.MapMetrics(); // Exposes /metrics in Prometheus format
 
 app.UseHttpsRedirection();
 app.UseRateLimiter();

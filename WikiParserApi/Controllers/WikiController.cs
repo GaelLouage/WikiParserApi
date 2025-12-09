@@ -1,6 +1,7 @@
 using HtmlAgilityPack;
 using Infra.Dtos;
 using Infra.Enums;
+using Infra.Helpers;
 using Infra.Interfaces;
 using Infra.Models;
 using Infra.Services.Classes;
@@ -118,15 +119,16 @@ namespace WikiParserApi.Controllers
         private void LogInformation(string topic, string cacheKey, WikiEntity wikiEntity)
         {
             _logger.LogInformation(
-                $"Wiki Endpoint called at " +
-                $"{DateTime.UtcNow}");
+                $"Wiki Endpoint called at \n" +
+                $"TimeStamp: {DateTime.UtcNow} \n" +
+                $"IP: {HostHelpers.GetLocalIPAddress()}");
 
             _memoryCacheService.SetCacheValue(
                 cacheKey,
                 wikiEntity,
                 TimeSpan.FromSeconds(30));
             _logger.LogInformation(
-                $"{topic} - full page cached in memory " +
+                $"{topic} - full page cached in memory \n" +
                 $"{DateTime.UtcNow}");
         }
     }

@@ -3,9 +3,13 @@ using Infra.Helpers;
 using Infra.Interfaces;
 using Infra.Services.Classes;
 using Infra.Services.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.IdentityModel.Tokens;
 using Serilog;
+using System.Security.Claims;
+using System.Text;
 using System.Threading.RateLimiting;
 
 namespace WikiParserApi.Bootstrapper
@@ -19,6 +23,7 @@ namespace WikiParserApi.Bootstrapper
             //scoped registrations
             services.AddScoped<IPdfService, PdfService>();
             services.AddScoped<IMemoryCacheService, MemoryCacheService>();
+            services.AddScoped<IJwtTokenService,  JwtTokenService>();
             services.AddScoped<IWikiParserService>(sp =>
             {
                 var config = sp.GetRequiredService<IConfiguration>();
@@ -72,6 +77,26 @@ namespace WikiParserApi.Bootstrapper
             //    redisConnectionString: builder.Configuration.GetConnectionString("Redis"),
             //    name: "redis_cache",
             //    failureStatus: HealthStatus.Unhealthy);
+        }
+
+        public static void AddJWToken(this WebApplicationBuilder builder)
+        {
+            builder.Services.AddAuthentication(cfg => {
+                cfg.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                cfg.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                cfg.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(x => {
+                x.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidAudience = builder.Configuration["ApplicationSettings:JWT_Audience"],
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["ApplicationSettings:JWT_Secret"])),
+                    ValidIssuer = builder.Configuration["ApplicationSettings:JWT_Issuer"],
+                    ClockSkew = TimeSpan.Zero,
+                    RoleClaimType = ClaimTypes.Role
+                };
+            });
         }
     }
 }

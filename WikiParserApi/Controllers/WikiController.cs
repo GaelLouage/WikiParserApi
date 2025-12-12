@@ -1,11 +1,12 @@
 using HtmlAgilityPack;
+using Infra.Constants;
 using Infra.Dtos;
 using Infra.Enums;
 using Infra.Helpers;
 using Infra.Interfaces;
 using Infra.Models;
-using Infra.Services.Classes;
 using Infra.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.RateLimiting;
@@ -15,6 +16,7 @@ using System.Reflection.Emit;
 namespace WikiParserApi.Controllers
 {
     [EnableRateLimiting("fixed")]
+    [Authorize(Roles = $"{RoleType.SuperAdmin},{RoleType.Admin},{RoleType.User}")]
     [ApiController]
     [Route("api/rest_v1/[controller]")]
     public class WikiController : ControllerBase
@@ -24,18 +26,21 @@ namespace WikiParserApi.Controllers
         private readonly ILogger<WikiController> _logger;
         private readonly IMemoryCacheService _memoryCacheService;
         private readonly IAppMetricsService _appMetricsService;
+        private readonly IJwtTokenService _jwtTokenService;
         public WikiController(
             IWikiParserService parser,
             ILogger<WikiController> logger,
             IMemoryCacheService memoryCacheService,
             IPdfService pdfService,
-            IAppMetricsService appMetricsService)
+            IAppMetricsService appMetricsService,
+            IJwtTokenService jwtTokenService)
         {
             _parser = parser;
             _logger = logger;
             _memoryCacheService = memoryCacheService;
             _pdfService = pdfService;
             _appMetricsService = appMetricsService;
+            _jwtTokenService = jwtTokenService;
         }
 
         //get full page 

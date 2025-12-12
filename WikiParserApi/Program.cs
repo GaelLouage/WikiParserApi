@@ -13,6 +13,8 @@ using WikiParserApi.Bootstrapper;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddJWToken();
+
 #region Services
 builder.Services.RateLimiterRegistration();
 builder.Services.AddHealthChecks();
@@ -23,6 +25,7 @@ builder.SerilogConfiguration();
 builder.Services.AddMemoryCache();
 builder.Services.AddHealthChecks();
 builder.Services.ScopesRegistration(builder);
+
 #endregion
 
 var app = builder.Build();
@@ -39,6 +42,7 @@ app.MapMetrics(); // Exposes /metrics in Prometheus format
 
 app.UseHttpsRedirection();
 app.UseRateLimiter();
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

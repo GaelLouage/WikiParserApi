@@ -1,16 +1,16 @@
-﻿using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace WikiParserApi.Controllers
 {
+    [Authorize(Roles = "SuperAdmin,Admin,User")]
     [ApiController]
     [Route("api/rest_v1/[controller]")]
     public class HealthCheckController : ControllerBase
     {
-
-
         private readonly HealthCheckService _healthCheckService;
 
         public HealthCheckController(HealthCheckService healthCheckService)

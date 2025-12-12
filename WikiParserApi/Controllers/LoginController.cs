@@ -1,0 +1,44 @@
+﻿using Infra.Models;
+using Infra.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+
+namespace WikiParserApi.Controllers
+{
+    [EnableRateLimiting("fixed")]
+    [ApiController]
+    [Route("api/rest_v1/[controller]")]
+    public class LoginController : ControllerBase
+    {
+
+        private readonly IJwtTokenService _jwtTokenService;
+
+        public LoginController(IJwtTokenService jwtTokenService)
+        {
+            _jwtTokenService = jwtTokenService;
+        }
+
+       [HttpPost("login")]
+       public IActionResult Login([FromBody]UserEntity user)
+       {
+            if (string.IsNullOrEmpty(user.UserName) || 
+                string.IsNullOrEmpty(user.Email) ||
+                string.IsNullOrEmpty(user.Password))
+            {
+               
+                return  BadRequest("User data required");
+
+            }
+            //TODO: user validation hashing
+
+
+            //TODO: db connection (mongodb)
+
+
+            var jwToken = _jwtTokenService.GenerateJWTToken(user);
+            return Ok(jwToken);
+       }
+       
+    }
+}

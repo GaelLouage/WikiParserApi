@@ -1,4 +1,5 @@
-﻿using Infra.Models;
+﻿using Infra.Helpers;
+using Infra.Models;
 using Infra.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -30,7 +31,6 @@ namespace WikiParserApi.Controllers
                 return  BadRequest("User data required");
 
             }
-            var cc = "";
             //TODO: user validation hashing
 
 

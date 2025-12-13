@@ -30,6 +30,7 @@ namespace WikiParserApi.Controllers
                 return  BadRequest("User data required");
 
             }
+            var cc = "";
             //TODO: user validation hashing
 
 

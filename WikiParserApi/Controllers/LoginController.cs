@@ -1,4 +1,5 @@
-﻿using Infra.Models;
+﻿using Infra.Helpers;
+using Infra.Models;
 using Infra.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -29,6 +30,12 @@ namespace WikiParserApi.Controllers
                
                 return  BadRequest("User data required");
 
+            }
+
+            var isEmailValid = EmailHelpers.IsValidEmail(user.Email);
+            if (isEmailValid is false)
+            {
+                return BadRequest($"Invalid email: {user.Email}");
             }
             //TODO: user validation hashing
 

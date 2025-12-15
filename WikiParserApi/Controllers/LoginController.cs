@@ -40,7 +40,6 @@ namespace WikiParserApi.Controllers
             }
             //TODO: user validation hashing
 
-            user.Password.Test();
             //TODO: db connection (mongodb)
 
 

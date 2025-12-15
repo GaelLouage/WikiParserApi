@@ -1,4 +1,5 @@
-﻿using Infra.Helpers;
+﻿using Infra.Extensions;
+using Infra.Helpers;
 using Infra.Models;
 using Infra.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -39,7 +40,7 @@ namespace WikiParserApi.Controllers
             }
             //TODO: user validation hashing
 
-
+            user.Password.Test();
             //TODO: db connection (mongodb)
 
 

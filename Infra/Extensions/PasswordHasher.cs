@@ -8,6 +8,9 @@ namespace Infra.Extensions
 {
     public static class PasswordHasher
     {
-
+        public static string Test(this string password)
+        {
+            return password;
+        }
     }
 }

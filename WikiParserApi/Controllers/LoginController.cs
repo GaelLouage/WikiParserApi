@@ -4,6 +4,7 @@ using Infra.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Infra.Extensions;
 
 namespace WikiParserApi.Controllers
 {
@@ -37,8 +38,14 @@ namespace WikiParserApi.Controllers
             {
                 return BadRequest($"Invalid email: {user.Email}");
             }
-            //TODO: user validation hashing
-
+            //dummy test
+            var hashedUserPassword = user.Password.HashPassword();
+            //compare password
+            var verifyPassword = user.Password.VerifyPassword(hashedUserPassword);
+            if (verifyPassword is false)
+            {
+                return NotFound("Wrong username of password.");
+            }
             //TODO: db connection (mongodb)
 
 
